@@ -11,7 +11,7 @@ var question8 = Object.create(Question);
 var question9 = Object.create(Question);
 var question10 = Object.create(Question);
 question1.Text = "Suppose Sarah's stock price is currently $50. In the next six months it will either fall to $30 or rise to $80. What is the option delta of a call option with an exercise price of $50?"; 
-question1.AnswerChoices = ["0.375", "0.5.", "O.6", "0.75"]; 
+question1.AnswerChoices = ["0.375", "0.5.", "0.6", "0.75"]; 
 question1.CorrectAnswerIndex = 2; 
 question1.CurrentlyDisplayed = true;
 state.questions.push(question1);
@@ -70,21 +70,6 @@ state.questions.push(question10);
 
 
 
-//loop through the state.questions and display the question that //has CurrentlyDisplayed set to true 
-// function UpdateView(){
-// 	$('section').removeClass('hidden');
-// 	$('#startSection').addClass('hidden');
-// 	for (var i in state.questions){
-// 		if (state.questions[i].CurrentlyDisplayed===true){
-		
-// 		return i;
-// 		}
-// 		else{
-// 		}
-// 	}
-// 	// return i;
-// }
-
 function createQuestion(questionNum){
 	var question= "<p class='userQuestion'>" + state.questions[questionNum].Text + "</p>"
 	$('section').prepend(question)
@@ -101,17 +86,17 @@ function createAnswerChoices(questionNum){
 function CheckAnswer(userAns, iterNum){
 	var correctAnsIndex= state.questions[iterNum].CorrectAnswerIndex
 	if (userAns== state.questions[iterNum].CorrectAnswerIndex){
-		alert("Congrats youre correct. ")
+		addCorrectAnswer(iterNum);
 		UpdateScore	();
 		updateQuestionNum();
-
 	}
 	else{
-		alert("Sorry the correct answer was " + state.questions[iterNum].AnswerChoices[correctAnsIndex])
-		updateQuestionNum();		
-
+		addCorrectAnswer(iterNum);
+		addYourAnswer(userAns)
+		updateQuestionNum();	
 	}
 }
+
 //Update Score if answer is correct 
 function UpdateScore(){ 
 state.score++; 
@@ -134,11 +119,42 @@ function updateScoreDisplay	(){
 }
 
 function updateqNum	(){ 
-	
-		var qNum= "<p class='qNum'>Question "+ state.currentQuestion+ " out of  " + state.questions.length+ "</p>"
+		var questionCounter = 1 + state.currentQuestion;
+		var qNum= "<p class='qNum'>Question "+ questionCounter+ " out of  " + state.questions.length+ "</p>"
 		$('.qNum').remove();
 		$('.scoreDisplay').prepend(qNum);
 }
+
+function checkEndOfQuiz(){
+	if (state.currentQuestion==(state.questions.length-1)){
+		removeQuestionAndAnswers();
+		$('#submitButton').addClass('hidden');
+		$('.endOfQuizMsg').removeClass('hidden')
+	}
+}
+
+
+function changeButtonToContinue(){
+	$('span').text("Click to continue")
+	$('#submitButton').attr("id", 'continueButton')
+	
+}
+
+function changeButtonToSubmit(){
+	$('span').text("Submit your answer")
+	$('#continueButton').attr("id", 'submitButton')
+	
+}
+
+function addCorrectAnswer(iterNum){
+	$('#answer'+state.questions[iterNum].CorrectAnswerIndex).append ("    (Correct Answer)")
+}
+
+function addYourAnswer(userAns){
+	$('#answer'+userAns).append ("    (Your Answer)")
+}
+
+
 
 
 
@@ -147,22 +163,49 @@ $(document).ready(function(){
 //all your event handlers
 	$('#startButton').click(function(){
 		event.preventDefault();
+
 		$('section').removeClass('hidden');
 		$('#submitButton').removeClass('hidden');
 		$('#startSection').addClass('hidden');
+		$('#resetButton').removeClass('hidden');
 		createQuestion(state.currentQuestion);
 		createAnswerChoices(state.currentQuestion);
 		updateqNum();	
 	});
 
-	$('#submitButton').click(function(){
+	$('.clickButtons').on('click', '#submitButton', function(){
 		var userAns = $('input[name=ansChoice]:checked').val();
-		// var iterNum= UpdateView()
 		CheckAnswer(userAns, state.currentQuestion);
+		changeButtonToContinue();
 		updateScoreDisplay();
+		
+	})
+
+	// $('#continueButton').click(function(){
+	$('.clickButtons').on('click', '#continueButton', function(){
+		changeButtonToSubmit();
 		updateqNum();
 		removeQuestionAndAnswers();
 		createQuestion(state.currentQuestion);
 		createAnswerChoices(state.currentQuestion);
+		checkEndOfQuiz();
+	});
+
+
+
+
+	$('#resetButton').click(function(){
+		state.currentQuestion= 0;
+		state.score=0;
+		removeQuestionAndAnswers();
+		$('#submitButton').removeClass('hidden');
+		$('.endOfQuizMsg').addClass('hidden')
+		createQuestion(state.currentQuestion);
+		createAnswerChoices(state.currentQuestion);
+		updateScoreDisplay();
+		updateqNum();
+
 	})
+
+
 });
